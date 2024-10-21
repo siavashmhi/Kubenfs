@@ -1,0 +1,94 @@
+- name: Install NFS Server
+  apt:
+    name: nfs-kernel-server
+    state: present
+    update_cache: yes
+  when: inventory_hostname == 'nfs-server'
+
+- name: Install NFS client
+  apt:
+    name: nfs-common
+    state: present
+    update_cache: yes
+  when: inventory_hostname != 'nfs-server' 
+
+- name: Create shared directory
+  file:
+    path: "/srv/nfs4/data"
+    state: directory
+    mode: '0777'
+  when: inventory_hostname == 'nfs-server' 
+
+- name: Create kube directory
+  file:
+    path: "/srv/nfs4/data/kube"
+    state: directory
+    mode: '0777'
+  when: inventory_hostname == 'nfs-server' 
+
+- name: Apply NFS export template
+  template:
+    src: exports.j2
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: '0644'
+  when: inventory_hostname == 'nfs-server' 
+
+- name: Restart NFS service
+  service:
+    name: nfs-kernel-server
+    state: restarted
+    enabled: yes
+  when: inventory_hostname == 'nfs-server'
+
+- name: Reload NFS exports
+  command: exportfs -ra
+  when: inventory_hostname == 'nfs-server'
+  register: nfs_config
+
+- name: Debug nfs config
+  debug:
+    var: nfs_config
+
+- name: Install dependencies (wget)
+  apt:
+    name: wget
+    state: present
+    update_cache: yes
+  when: inventory_hostname == 'nfs-server'
+
+- name: Download MinIO Client (mc) with curl
+  shell: |
+    curl -o /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc
+    chmod +x /usr/local/bin/mc
+  args:
+    creates: /usr/local/bin/mc
+  when: inventory_hostname == 'nfs-server'
+
+- name: Verify mc installation
+  command: mc --version
+  register: mc_version
+  ignore_errors: true
+  when: inventory_hostname == 'nfs-server'
+
+- name: Ensure mc is installed
+  debug:
+    msg: "MinIO Client (mc) version: {{ mc_version.stdout }}"
+  when: inventory_hostname == 'nfs-server'
+
+- name: Ensure the backup script exists
+  template:
+    src: backup.sh.j2
+    dest: /opt/backup.sh
+    mode: '0755'
+
+# - name: Create a cron job to run the backup script every day at 3 AM
+#   cron:
+#     name: "Daily Kubernetes Backup"
+#     minute: "0"
+#     hour: "3"
+#     job: "/opt/backup.sh >> /var/log/kube_backup.log 2>&1"
+#     cron_file: "kube_backup"
+#     state: present
+    

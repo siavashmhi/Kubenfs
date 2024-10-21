@@ -1,0 +1,10 @@
+# /etc/exports: NFS file systems being exported. See exports(5).
+
+# Export NFS share for Kubernetes worker nodes
+/srv/nfs4/data {% for host in groups['kubernetes-workers'] %}
+{{ hostvars[host]['ansible_host'] }}(rw,sync,no_subtree_check,no_root_squash,fsid=0){% if not loop.last %}  {% endif %}
+{% endfor %}
+
+/srv/nfs4/data/kube {% for host in groups['kubernetes-workers'] %}
+{{ hostvars[host]['ansible_host'] }}(rw,sync,no_subtree_check,no_root_squash){% if not loop.last %}  {% endif %}
+{% endfor %}

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-test
+  labels:
+    storage.k8s.io/name: nfs-pvc
+    storage.k8s.io/part-of: cloudflow
+    storage.k8s.io/created-by: siavash-mohseni
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-client
+  resources:
+    requests:
+      storage: 1Gi
