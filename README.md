@@ -9,8 +9,8 @@ This project provides a fully automated solution to configure Network File Syste
 To begin, clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/siavashmhi/nfs-provisioner.git
-cd nfs-provisioner
+git clone https://github.com/siavashmhi/Kubenfs.git
+cd Kubenfs
 ```
 
 ### Step 2: Modify ansible inventory.ini file
@@ -33,13 +33,8 @@ worker1 ansible_host=192.168.1.11
 worker2 ansible_host=192.168.1.12
 
 ```
-### Step 3: Run preparing.yml ansible playbook.
 
-```bash
-ansible-playbook -i inventory/inventory.ini playbooks/preparing.yml
-```
-
-### Step 4: Run nfs.yml ansible playbook.
+### Step 3: Run nfs.yml ansible playbook.
 
 ```bash
 ansible-playbook -i inventory/inventory.ini playbooks/nfs.yml
